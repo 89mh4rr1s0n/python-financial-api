@@ -74,6 +74,7 @@ def get_ind_rankings(text, series_name):
         growth_arr.pop()
         growth_arr.append(last_growth[4:len(last_growth)])
     else:
+        growth_a = []
         growth_arr = []
         for ind in range(len(man_ind_list)):
             if man_ind_list[ind] in growth:
@@ -81,13 +82,15 @@ def get_ind_rankings(text, series_name):
                     'industry': man_ind_list[ind],
                     'index': growth.find(man_ind_list[ind])
                 }
-                growth_arr.append(i.copy())
-        growth_sorted = sorted(growth_arr, key=itemgetter('index'), reverse=False)
+                growth_a.append(i.copy())
+        growth_sorted = sorted(growth_a, key=itemgetter('index'), reverse=False)
+        for i in growth_sorted:
+            growth_arr.append(i["industry"])
         
 
     print(growth_sorted)
     print(len(growth_sorted))
-    print(len(growth_arr))
+    print(growth_arr)
     # contraction = man_split[1]
     # contraction_split = contraction.split(":")
     # contraction_inds = contraction_split[len(contraction_split) - 1]
