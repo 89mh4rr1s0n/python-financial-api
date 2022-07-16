@@ -64,73 +64,56 @@ def get_ind_rankings(text, series_name):
     man_split = text.split(".")
 
     growth = man_split[0]
-    if ":" in growth:
-        growth_split = growth.split(":")
-        growth_inds = growth_split[len(growth_split) - 1]
-        growth_arr = growth_inds.split(";")
-        growth_arr = [i.lstrip() for i in growth_arr]
-        growth_arr_copy = growth_arr.copy()
-        last_growth = growth_arr_copy[len(growth_arr_copy)-1]
-        growth_arr.pop()
-        growth_arr.append(last_growth[4:len(last_growth)])
-    else:
-        growth_arr = []
-        for ind in range(len(man_ind_list)):
-            if man_ind_list[ind] in growth:
-                i = {
-                    'industry': man_ind_list[ind],
-                    'index': growth.find(man_ind_list[ind])
-                }
-                growth_arr.append(i.copy())
-        growth_sorted = sorted(growth_arr, key=itemgetter('index'), reverse=False)
-        
+    growth_split = growth.split(":")
+    growth_inds = growth_split[len(growth_split) - 1]
+    growth_arr = growth_inds.split(";")
+    growth_arr = [i.lstrip() for i in growth_arr]
+    growth_arr_copy = growth_arr.copy()
+    last_growth = growth_arr_copy[len(growth_arr_copy)-1]
+    growth_arr.pop()
+    growth_arr.append(last_growth[4:len(last_growth)])
 
-    print(growth_sorted)
-    print(len(growth_sorted))
-    print(len(growth_arr))
-    # contraction = man_split[1]
-    # contraction_split = contraction.split(":")
-    # contraction_inds = contraction_split[len(contraction_split) - 1]
-    # contraction_arr = contraction_inds.split(";")
-    # contraction_arr = [i.lstrip() for i in contraction_arr]
-    # contraction_arr_copy = contraction_arr.copy()
-    # last_contraction = contraction_arr_copy[len(contraction_arr_copy)-1]
-    # contraction_arr.pop()
-    # contraction_arr.append(last_contraction[4:len(last_contraction)])
+    contraction = man_split[1]
+    contraction_split = contraction.split(":")
+    contraction_inds = contraction_split[len(contraction_split) - 1]
+    contraction_arr = contraction_inds.split(";")
+    contraction_arr = [i.lstrip() for i in contraction_arr]
+    contraction_arr_copy = contraction_arr.copy()
+    last_contraction = contraction_arr_copy[len(contraction_arr_copy)-1]
+    contraction_arr.pop()
+    contraction_arr.append(last_contraction[4:len(last_contraction)])
 
-    # print(growth_inds)
-    # print(contraction_inds)
-    # series_data = []
+    series_data = []
 
-    # for x in range(len(man_ind_list)):
-    #     if man_ind_list[x] in growth_arr:
-    #         item = {
-    #             'industry': man_ind_list[x],
-    #             'direction': 'Growth',
-    #             'rank': len(growth_arr) - ( growth_arr.index(man_ind_list[x]) )
-    #         }
-    #         series_data.append(item.copy())
-    #     elif man_ind_list[x] in contraction_arr:
-    #         item = {
-    #             'industry': man_ind_list[x],
-    #             'direction': 'Contraction',
-    #             'rank': 0 - ( contraction_arr.index(man_ind_list[x]) + 1 )
-    #         }
-    #         series_data.append(item.copy())
-    #     else:
-    #         item = {
-    #             'industry': man_ind_list[x],
-    #             'direction': 'Neutral',
-    #             'rank': 0
-    #         }
-    #         series_data.append(item.copy())
+    for x in range(len(man_ind_list)):
+        if man_ind_list[x] in growth_arr:
+            item = {
+                'industry': man_ind_list[x],
+                'direction': 'Growth',
+                'rank': len(growth_arr) - ( growth_arr.index(man_ind_list[x]) )
+            }
+            series_data.append(item.copy())
+        elif man_ind_list[x] in contraction_arr:
+            item = {
+                'industry': man_ind_list[x],
+                'direction': 'Contraction',
+                'rank': 0 - ( contraction_arr.index(man_ind_list[x]) + 1 )
+            }
+            series_data.append(item.copy())
+        else:
+            item = {
+                'industry': man_ind_list[x],
+                'direction': 'Neutral',
+                'rank': 0
+            }
+            series_data.append(item.copy())
 
-    # series = {
-    #     "name": series_name,
-    #     "data": series_data
-    # }
+    series = {
+        "name": series_name,
+        "data": series_data
+    }
 
-    # data.append(series.copy())
+    data.append(series.copy())
 
 def get_ism_data(link):
     driver = webdriver.Chrome(PATH)
@@ -159,12 +142,12 @@ def get_ism_data(link):
 
     data.append(series_info)
 
-    # get_ind_rankings(man.text, 'manufacturing')
-    # get_ind_rankings(new_orders.text, 'new orders')
-    # get_ind_rankings(production.text, 'production')
-    # get_ind_rankings(employment.text, 'employment')
-    # get_ind_rankings(deliveries.text, 'deliveries')
-    # get_ind_rankings(inventories.text, 'inventories')
+    get_ind_rankings(man.text, 'manufacturing')
+    get_ind_rankings(new_orders.text, 'new orders')
+    get_ind_rankings(production.text, 'production')
+    get_ind_rankings(employment.text, 'employment')
+    get_ind_rankings(deliveries.text, 'deliveries')
+    get_ind_rankings(inventories.text, 'inventories')
     get_ind_rankings(customer_inventories.text, 'customer inventories')
 
     driver.quit()
