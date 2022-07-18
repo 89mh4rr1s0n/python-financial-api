@@ -11,7 +11,6 @@ client = pymongo.MongoClient(mongo_uri)
 db = client["financialModellingPrepDB"]
 collection = db["ismManufacturing"]
 
-
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
@@ -54,7 +53,9 @@ links = []
 for link in man_links:
     links.append(link.get_attribute('href'))
 
-print(links)
+for l in links:
+    print(l)
+    
 
 driver.quit()
 
@@ -187,16 +188,18 @@ def get_ism_data(link):
         'data': data
     }
 
-    collection.insert_one(mongo_item)
+    check = collection.count_documents({'_id': 'ism-man-' + headline_words[0].lower() + "-" + headline_words[1]})
+
+    print(check)
+
+    if check == 0:
+        collection.insert_one(mongo_item)
 
     driver.quit()
 
-
-
-
 # get_ism_data('https://www.prnewswire.com/news-releases/manufacturing-pmi-at-60-7-december-2020-manufacturing-ism-report-on-business-301200432.html')
-for link in links[0:1]:
+for link in links:
     get_ism_data(link)
 
-print(json.dumps(data, indent=4))
+# print(json.dumps(data, indent=4))
 

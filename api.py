@@ -1,12 +1,20 @@
-from flask import Flask, request
+from flask import Flask, request, jsonify
 from flask_restful import Api, Resource
 from ib_insync import *
 import random
 import json
+from bson import json_util
 import yfinance as yf
 import investpy
 import datetime
 import requests
+
+import pymongo
+mongo_uri = "mongodb://localhost:27017"
+client = pymongo.MongoClient(mongo_uri) 
+db = client["financialModellingPrepDB"]
+ism_man_coll = db["ismManufacturing"]
+ism_serv_coll = db["ismServices"]
 
 # nasdaq data link api key wXAfUqT2VxhmQzjMhsKW
 
@@ -69,6 +77,18 @@ class BondHistorical(Resource):
             "name": country + ' ' + duration,
             "historical": json.loads(historical.reset_index().to_json(orient='records', date_format='iso'))
         }
+
+class IsmManufacturing(Resource):
+    def get(self):
+        mongo_response = ism_man_coll.find()
+        items = [doc for doc in mongo_response]
+        return jsonify(items)
+
+class IsmServices(Resource):
+    def get(self):
+        mongo_response = ism_serv_coll.find()
+        items = [doc for doc in mongo_response]
+        return jsonify(items)
 
 class DbNomics(Resource):
     def get(self, provider, code):
@@ -150,6 +170,8 @@ api.add_resource(BondList, "/available-bonds")
 api.add_resource(BondHistorical, "/historical/bond/<string:country>/<string:duration>")
 api.add_resource(DbNomics, "/dbn/<string:provider>/<string:code>")
 api.add_resource(DbNomicsSingle, "/dbn-single/<string:provider>/<string:code>/<string:series>")
+api.add_resource(IsmManufacturing, "/ism-man")
+api.add_resource(IsmServices, "/ism-non-man")
 
 if __name__ == "__main__":
     app.run(debug=True)
