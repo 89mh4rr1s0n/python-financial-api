@@ -2,7 +2,7 @@ from itertools import count
 from locale import currency
 import yfinance as yf
 import investpy
-import datetime
+from datetime import datetime
 import json
 import requests
 from bs4 import BeautifulSoup
@@ -22,6 +22,8 @@ PATH = "C:\Program Files (x86)\chromeWebDriver\chromedriver.exe"
 # driver = webdriver.Chrome(PATH)
 
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
+
+# driver.get('https://www.investing.com/economic-calendar/building-permits-25')
 
 driver.get('https://www.investing.com/economic-calendar/michigan-consumer-sentiment-320')
 
@@ -48,11 +50,21 @@ for x in range(300):
     # except:
     #     driver.quit()
     try:
-        # if driver.find_element(By.CLASS_NAME, "showMoreReplies").is_displayed():
-        #     driver.find_element(By.CLASS_NAME, "showMoreReplies").click()
-        if driver.find_element(By.XPATH, '//*[@id="showMoreHistory320"]/a').is_displayed():
-            driver.find_element(By.XPATH, '//*[@id="showMoreHistory320"]/a').click()
-    finally:
+        # element = WebDriverWait(driver, 10).until(
+        # EC.element_to_be_clickable((By.XPATH, '//div[contains(@id,"showMoreHistory")]/a')))
+
+        # if element:
+        #     element.click()
+        # else:
+        #     print('')
+
+
+        if driver.find_element(By.CLASS_NAME, "showMoreReplies").is_displayed():
+            driver.find_element(By.CLASS_NAME, "showMoreReplies").click()
+
+        # if driver.find_element(By.XPATH, '//div[contains(@id,"showMoreHistory")]/a').is_displayed():
+        #     driver.find_element(By.XPATH, '//div[contains(@id,"showMoreHistory")]/a').click()
+    except:
         print("finished expanding historical data")
 
 time.sleep(2)
@@ -75,15 +87,15 @@ country = driver.find_element(By.XPATH, '//div[@id="overViewBox"]/div[contains(@
 curr = driver.find_element(By.XPATH, '//div[@id="overViewBox"]/div[contains(@class, "right")]/div[3]/span[2]')
 importance = driver.find_elements(By.XPATH, '//div[@id="overViewBox"]/div[contains(@class, "right")]//i[contains(@class, "grayFullBullishIcon")]')
 
-dates = driver.find_element(By.XPATH, '//div[contains(@class, "historyTab")]/table/tbody/tr[not(descendant::span[contains(@class, "smallGrayP")])]/td[1]')
-actuals = driver.find_element(By.XPATH, '//div[contains(@class, "historyTab")]/table/tbody/tr[not(descendant::span[contains(@class, "smallGrayP")])]/td[3]')
-forecasts = driver.find_element(By.XPATH, '//div[contains(@class, "historyTab")]/table/tbody/tr[not(descendant::span[contains(@class, "smallGrayP")])]/td[4]')
-previous = driver.find_element(By.XPATH, '//div[contains(@class, "historyTab")]/table/tbody/tr[not(descendant::span[contains(@class, "smallGrayP")])]/td[5]')
+dates = driver.find_elements(By.XPATH, '//div[contains(@class, "historyTab")]/table/tbody/tr[not(descendant::span[contains(@class, "smallGrayP")])]/td[1]')
+actuals = driver.find_elements(By.XPATH, '//div[contains(@class, "historyTab")]/table/tbody/tr[not(descendant::span[contains(@class, "smallGrayP")])]/td[3]')
+forecasts = driver.find_elements(By.XPATH, '//div[contains(@class, "historyTab")]/table/tbody/tr[not(descendant::span[contains(@class, "smallGrayP")])]/td[4]')
+previous = driver.find_elements(By.XPATH, '//div[contains(@class, "historyTab")]/table/tbody/tr[not(descendant::span[contains(@class, "smallGrayP")])]/td[5]')
 
 # dates = hist_table.find_elements(By.XPATH, '//div[contains(@class, "historyTab")]/table/tbody/tr/td[1]')
 # times = hist_table.find_elements(By.XPATH, '//div[contains(@class, "historyTab")]/table/tbody/tr/td[2]')
 
-print('country', country.text)
+print('country', country.get_attribute('title'))
 
 def convert_string(str):
     if "M" in str:
@@ -95,11 +107,65 @@ def convert_string(str):
     elif "B" in str:
         num = str.replace('B', '')
         return float(num) * 1000000000
+    elif str == ' ':
+        return str
     else:
-        return float(num)
+        return float(str)
 
-# for x in range(len(dates)):
-#     print("val", x.text)
+monthly = False
+same_month = False
+
+# still need to handle the "x + 1" error for the last iteration of the loop where it is not available -- on linne 122 -- next_date_string
+# also i think i can change the clickable element to expand the table back to the xpath selectors
+
+for x in range(len(dates)):
+    date_string = dates[x].text.split(" ")
+    next_date_string = dates[x + 1].text.split(" ")
+    year = int(date_string[2])
+    rep_month = datetime.strptime(date_string[0], '%b').month
+    rep_day = int(date_string[1].strip(','))
+    reported = datetime(year, rep_month, rep_day)
+
+    date = datetime(year, rep_month, 1)
+
+
+    if "(" in date_string[-1] and x == 0:
+        month = datetime.strptime(date_string[-1].replace("(", "").replace(")", ""), '%b').month
+        next_month = datetime.strptime(next_date_string[-1].replace("(", "").replace(")", ""), '%b').month
+        if month == 1 and next_month == 12 or next_month == month -1:
+            monthly = True
+
+        if date_string[-1].replace("(", "").replace(")", "") == date_string[0]:
+            # date = datetime(year, month, 1)
+            same_month = True
+        elif date_string[-1].replace("(", "").replace(")", "") != date_string[0] and monthly == True:
+            if datetime.strptime(next_date_string[0], '%b').month == 12:
+                date = datetime(year -1, datetime.strptime(next_date_string[0], '%b').month, 1)
+            else:
+                date = datetime(year, datetime.strptime(next_date_string[0], '%b').month, 1)
+                
+    else:
+        prev_date_string = dates[x + 1].text.split(" ")
+        previous = dates[x - 1].text.split(" ")
+        if monthly == True and same_month == False:
+            if datetime.strptime(next_date_string[0], '%b').month == 12:
+                date = datetime(year -1, datetime.strptime(next_date_string[0], '%b').month, 1)
+            else:
+                date = datetime(year, datetime.strptime(prev_date_string[0], '%b').month, 1)
+        elif monthly == True and same_month == True:
+            if datetime.strptime(date_string[0], '%b').month == datetime.strptime(previous[0], '%b').month:
+                date = datetime(year, datetime.strptime(date_string[0], '%b').month -1, 1)
+            else:
+                date = datetime(year, datetime.strptime(date_string[0], '%b').month, 1)
+
+    item = {
+        'date reported': reported.strftime("%d/%m/%Y"),
+        'date': date.strftime("%d/%m/%Y"),
+        'value': convert_string(actuals[x].text),
+        'forecast': convert_string(forecasts[x].text)
+    }
+    print(item, monthly, date_string[-1].replace("(", "").replace(")", ""), date_string[0], datetime.strptime(next_date_string[0], '%b').month, same_month)
+    # print("val", convert_string(actuals[x].text))
 
 # for x in table_rows:
 #     print(x.find_element(By.CSS_SELECTOR, 'td').text)
