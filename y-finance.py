@@ -36,7 +36,7 @@ driver.get('https://www.investing.com/economic-calendar/michigan-consumer-sentim
 
 # expand_history = driver.find_element(By.CLASS_NAME, "showMoreReplies block")
 time.sleep(2)
-for x in range(300):
+for x in range(400):
     # time.sleep(1)
     # try:
     #     table = driver.find_element(By.CLASS_NAME, "historyTab")
@@ -59,11 +59,11 @@ for x in range(300):
         #     print('')
 
 
-        if driver.find_element(By.CLASS_NAME, "showMoreReplies").is_displayed():
-            driver.find_element(By.CLASS_NAME, "showMoreReplies").click()
+        # if driver.find_element(By.CLASS_NAME, "showMoreReplies").is_displayed():
+        #     driver.find_element(By.CLASS_NAME, "showMoreReplies").click()
 
-        # if driver.find_element(By.XPATH, '//div[contains(@id,"showMoreHistory")]/a').is_displayed():
-        #     driver.find_element(By.XPATH, '//div[contains(@id,"showMoreHistory")]/a').click()
+        if driver.find_element(By.XPATH, '//div[contains(@id,"showMoreHistory")]/a').is_displayed():
+            driver.find_element(By.XPATH, '//div[contains(@id,"showMoreHistory")]/a').click()
     except:
         print("finished expanding historical data")
 
@@ -79,6 +79,14 @@ hist_data = []
 
 # dates = driver.find_elements(By.XPATH, '//div[contains(@class, "historyTab")]/table/tbody/tr/td[1]')
 # times = driver.find_elements(By.XPATH, '//div[contains(@class, "historyTab")]/table/tbody/tr/td[2]')
+
+# rows without speaks
+# //*[@id="fullColumn"]/div/div[6]/div[3]/div/a[not(descendant::span[contains(text(), "Speaks")])]
+
+# //*[@id="fullColumn"]/div/div[6]/div[3]/div/a[not(descendant::span[contains(text(), "Speaks")]) and not(descendant::span[contains(text(), "Election")]) and not(descendant::span[contains(text(), "FOMC")]) and not(descendant::span[contains(text(), "Testifies")])    ] 
+
+
+# "FOMC"  "Testifies"
 
 # find table with historical data and exclude premliminary rows
 
@@ -107,6 +115,12 @@ def convert_string(str):
     elif "B" in str:
         num = str.replace('B', '')
         return float(num) * 1000000000
+    elif "T" in str:
+        num = str.replace('T', '')
+        return float(num) * 1000000000000
+    elif "%" in str:
+        num = str.replace('%', '')
+        return float(num)
     elif str == ' ':
         return str
     else:
@@ -121,6 +135,7 @@ same_month = False
 for x in range(len(dates)):
     date_string = dates[x].text.split(" ")
     next_date_string = dates[x + 1].text.split(" ")
+    next_next_date_string = dates[x + 2].text.split(" ")
     year = int(date_string[2])
     rep_month = datetime.strptime(date_string[0], '%b').month
     rep_day = int(date_string[1].strip(','))
@@ -132,7 +147,8 @@ for x in range(len(dates)):
     if "(" in date_string[-1] and x == 0:
         month = datetime.strptime(date_string[-1].replace("(", "").replace(")", ""), '%b').month
         next_month = datetime.strptime(next_date_string[-1].replace("(", "").replace(")", ""), '%b').month
-        if month == 1 and next_month == 12 or next_month == month -1:
+        next_next_month = datetime.strptime(next_date_string[-1].replace("(", "").replace(")", ""), '%b').month
+        if month == 1 and next_month == 12 and next_next_month == 11 or next_month == month -1 and next_next_month == month -2:
             monthly = True
 
         if date_string[-1].replace("(", "").replace(")", "") == date_string[0]:
