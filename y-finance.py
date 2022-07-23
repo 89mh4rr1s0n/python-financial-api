@@ -23,9 +23,9 @@ PATH = "C:\Program Files (x86)\chromeWebDriver\chromedriver.exe"
 
 driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 
-# driver.get('https://www.investing.com/economic-calendar/building-permits-25')
+driver.get('https://www.investing.com/economic-calendar/building-permits-25')
 
-driver.get('https://www.investing.com/economic-calendar/michigan-consumer-sentiment-320')
+# driver.get('https://www.investing.com/economic-calendar/michigan-consumer-sentiment-320')
 
 # popup_close = driver.find_element(By.CLASS_NAME, "popupCloseIcon largeBannerCloser")
 # popup_close.click()
@@ -62,8 +62,9 @@ for x in range(400):
         # if driver.find_element(By.CLASS_NAME, "showMoreReplies").is_displayed():
         #     driver.find_element(By.CLASS_NAME, "showMoreReplies").click()
 
-        if driver.find_element(By.XPATH, '//div[contains(@id,"showMoreHistory")]/a').is_displayed():
-            driver.find_element(By.XPATH, '//div[contains(@id,"showMoreHistory")]/a').click()
+        # if driver.find_element(By.XPATH, '//div[contains(@id,"showMoreHistory")]/a').is_displayed():
+        #     driver.find_element(By.XPATH, '//div[contains(@id,"showMoreHistory")]/a').click()
+        driver.find_element(By.XPATH, '//div[contains(@id,"showMoreHistory")]/a').click()
     except:
         print("finished expanding historical data")
 
@@ -134,8 +135,9 @@ same_month = False
 
 for x in range(len(dates)):
     date_string = dates[x].text.split(" ")
-    next_date_string = dates[x + 1].text.split(" ")
-    next_next_date_string = dates[x + 2].text.split(" ")
+    if x <= len(dates) -3:
+        next_date_string = dates[x + 1].text.split(" ")
+        next_next_date_string = dates[x + 2].text.split(" ")
     year = int(date_string[2])
     rep_month = datetime.strptime(date_string[0], '%b').month
     rep_day = int(date_string[1].strip(','))
@@ -147,7 +149,7 @@ for x in range(len(dates)):
     if "(" in date_string[-1] and x == 0:
         month = datetime.strptime(date_string[-1].replace("(", "").replace(")", ""), '%b').month
         next_month = datetime.strptime(next_date_string[-1].replace("(", "").replace(")", ""), '%b').month
-        next_next_month = datetime.strptime(next_date_string[-1].replace("(", "").replace(")", ""), '%b').month
+        next_next_month = datetime.strptime(next_next_date_string[-1].replace("(", "").replace(")", ""), '%b').month
         if month == 1 and next_month == 12 and next_next_month == 11 or next_month == month -1 and next_next_month == month -2:
             monthly = True
 
@@ -161,13 +163,14 @@ for x in range(len(dates)):
                 date = datetime(year, datetime.strptime(next_date_string[0], '%b').month, 1)
                 
     else:
-        prev_date_string = dates[x + 1].text.split(" ")
+        # prev_date_string = dates[x + 1].text.split(" ")
         previous = dates[x - 1].text.split(" ")
         if monthly == True and same_month == False:
             if datetime.strptime(next_date_string[0], '%b').month == 12:
                 date = datetime(year -1, datetime.strptime(next_date_string[0], '%b').month, 1)
             else:
-                date = datetime(year, datetime.strptime(prev_date_string[0], '%b').month, 1)
+                # date = datetime(year, datetime.strptime(prev_date_string[0], '%b').month, 1)
+                date = datetime(year, datetime.strptime(next_date_string[0], '%b').month, 1)
         elif monthly == True and same_month == True:
             if datetime.strptime(date_string[0], '%b').month == datetime.strptime(previous[0], '%b').month:
                 date = datetime(year, datetime.strptime(date_string[0], '%b').month -1, 1)
