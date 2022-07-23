@@ -133,7 +133,7 @@ same_month = False
 # still need to handle the "x + 1" error for the last iteration of the loop where it is not available -- on linne 122 -- next_date_string
 # also i think i can change the clickable element to expand the table back to the xpath selectors
 
-for x in range(len(dates)):
+for x in range(len(dates) -2):
     date_string = dates[x].text.split(" ")
     if x <= len(dates) -3:
         next_date_string = dates[x + 1].text.split(" ")
@@ -143,8 +143,7 @@ for x in range(len(dates)):
     rep_day = int(date_string[1].strip(','))
     reported = datetime(year, rep_month, rep_day)
 
-    date = datetime(year, rep_month, 1)
-
+    date = reported.strftime("%d/%m/%Y")
 
     if "(" in date_string[-1] and x == 0:
         month = datetime.strptime(date_string[-1].replace("(", "").replace(")", ""), '%b').month
@@ -176,6 +175,8 @@ for x in range(len(dates)):
                 date = datetime(year, datetime.strptime(date_string[0], '%b').month -1, 1)
             else:
                 date = datetime(year, datetime.strptime(date_string[0], '%b').month, 1)
+        # else:
+        #     date = reported.strftime("%d/%m/%Y")
 
     item = {
         'date reported': reported.strftime("%d/%m/%Y"),
