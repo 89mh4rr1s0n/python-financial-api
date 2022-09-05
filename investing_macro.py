@@ -54,7 +54,7 @@ def get_hist_series(url):
     driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     driver.get(url)
     time.sleep(2)
-    for x in range(400):
+    for x in range(700):
         try:
             driver.find_element(By.XPATH, '//div[contains(@id,"showMoreHistory")]/a').click()
         except:

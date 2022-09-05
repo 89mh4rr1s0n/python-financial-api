@@ -10,6 +10,7 @@ mongo_uri = "mongodb://localhost:27017"
 client = pymongo.MongoClient(mongo_uri) 
 db = client["financialModellingPrepDB"]
 collection = db["ismServices"]
+serv_hist_collection = db["ismServHist"]
 
 from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
@@ -317,76 +318,174 @@ def get_ism_data(link):
     get_ind_rankings(deliveries.text, 'deliveries')
     get_ind_rankings(inventories.text, 'inventories')
 
-    values = {
-        'NMI Index': float(nmi_value.text),
-        'Business Activity': {
-            '% Higher': float(bus_act_higher.text),
-            '% Same': float(bus_act_same.text),
-            '% Lower': float(bus_act_lower.text),
-            'Index': float(bus_act_index.text)
-        },
-        'New Orders': {
-            '% Higher': float(new_orders_higher.text),
-            '% Same': float(new_orders_same.text),
-            '% Lower': float(new_orders_lower.text),
-            'Index': float(new_orders_index.text)
-        },
-        'Employment': {
-            '% Higher': float(employment_higher.text),
-            '% Same': float(employment_same.text),
-            '% Lower': float(employment_lower.text),
-            'Index': float(employment_index.text)
-        },
-        'Deliveries': {
-            '% Slower': float(deliveries_slower.text),
-            '% Same': float(deliveries_same.text),
-            '% Faster': float(deliveries_faster.text),
-            'Index': float(deliveries_index.text)
-        },
-        'Inventories': {
-            '% Higher': float(inventories_higher.text),
-            '% Same': float(inventories_same.text),
-            '% Lower': float(inventories_lower.text),
-            'Index': float(inventories_index.text)
-        },
-        'Prices': {
-            '% Higher': float(prices_higher.text),
-            '% Same': float(prices_same.text),
-            '% Lower': float(prices_lower.text),
-            'Index': float(prices_index.text)
-        },
-        'Order Backlog': {
-            '% Higher': float(order_backlog_higher.text),
-            '% Same': float(order_backlog_same.text),
-            '% Lower': float(order_backlog_lower.text),
-            'Index': float(order_backlog_index.text)
-        },
-        'Exports': {
-            '% Higher': float(exports_higher.text),
-            '% Same': float(exports_same.text),
-            '% Lower': float(exports_lower.text),
-            'Index': float(exports_index.text)
-        },
-        'Imports': {
-            '% Higher': float(imports_higher.text),
-            '% Same': float(imports_same.text),
-            '% Lower': float(imports_lower.text),
-            'Index': float(imports_index.text)
-        },
-        'Inventory Sentiment': {
-            '% Too High': float(inv_sent_too_high.text),
-            '% About Right': float(inv_sent_about_right.text),
-            '% Too Low': float(inv_sent_too_low.text),
-            'Index': float(inv_sent_index.text)
-        }
+    nmi_dict = {
+        "date": date,
+        "value": float(nmi_value.text)
     }
+
+    business_activity_dict =  {
+        "date": date,
+        '% Higher': float(bus_act_higher.text),
+        '% Same': float(bus_act_same.text),
+        '% Lower': float(bus_act_lower.text),
+        'Index': float(bus_act_index.text)
+    }
+
+    new_orders_dict = {
+        'date': date,
+        '% Higher': float(new_orders_higher.text),
+        '% Same': float(new_orders_same.text),
+        '% Lower': float(new_orders_lower.text),
+        'Index': float(new_orders_index.text)
+    }
+
+    employment_dict = {
+        'date': date,
+        '% Higher': float(employment_higher.text),
+        '% Same': float(employment_same.text),
+        '% Lower': float(employment_lower.text),
+        'Index': float(employment_index.text)
+    }
+
+
+    deliveries_dict = {
+        'date': date,
+        '% Slower': float(deliveries_slower.text),
+        '% Same': float(deliveries_same.text),
+        '% Faster': float(deliveries_faster.text),
+        'Index': float(deliveries_index.text)
+    }
+    
+    inventories_dict = {
+        'date': date,
+        '% Higher': float(inventories_higher.text),
+        '% Same': float(inventories_same.text),
+        '% Lower': float(inventories_lower.text),
+        'Index': float(inventories_index.text)
+    }
+
+    prices_dict = {
+        'date': date,
+        '% Higher': float(prices_higher.text),
+        '% Same': float(prices_same.text),
+        '% Lower': float(prices_lower.text),
+        'Index': float(prices_index.text)
+    }
+
+    order_backlog_dict = {
+        'date': date,
+        '% Higher': float(order_backlog_higher.text),
+        '% Same': float(order_backlog_same.text),
+        '% Lower': float(order_backlog_lower.text),
+        'Index': float(order_backlog_index.text)
+    }
+
+    exports_dict = {
+        'date': date,
+        '% Higher': float(exports_higher.text),
+        '% Same': float(exports_same.text),
+        '% Lower': float(exports_lower.text),
+        'Index': float(exports_index.text)
+    }
+
+    imports_dict = {
+        'date': date,
+        '% Higher': float(imports_higher.text),
+        '% Same': float(imports_same.text),
+        '% Lower': float(imports_lower.text),
+        'Index': float(imports_index.text)
+    }
+
+    inventories_sentiment_dict = {
+        'date': date,
+        '% Too High': float(inv_sent_too_high.text),
+        '% About Right': float(inv_sent_about_right.text),
+        '% Too Low': float(inv_sent_too_low.text),
+        'Index': float(inv_sent_index.text)
+    }
+
+    nmi_doc = serv_hist_collection.find({"index": "NMI"})
+    update = {"$push": {'data': {'$each': [nmi_dict], "$position": 0 }}}
+    for doc in nmi_doc:
+        dates = [x['date'] for x in doc['data']]
+        if date not in dates:
+            serv_hist_collection.find_one_and_update({"index": "NMI"}, update)
+
+    business_activity_doc = serv_hist_collection.find({"index": "BUSINESS_ACTIVITY"})
+    business_activity_update = {"$push": {'data': {'$each': [business_activity_dict], "$position": 0 }}}
+    for doc in business_activity_doc:
+        dates = [x['date'] for x in doc['data']]
+        if date not in dates:
+            serv_hist_collection.find_one_and_update({"index": "BUSINESS_ACTIVITY"}, business_activity_update)
+
+    deliveries_doc = serv_hist_collection.find({"index": "DELIVERIES"})
+    deliveries_update = {"$push": {'data': {'$each': [deliveries_dict], "$position": 0 }}}
+    for doc in deliveries_doc:
+        dates = [x['date'] for x in doc['data']]
+        if date not in dates:
+            serv_hist_collection.find_one_and_update({"index": "DELIVERIES"}, deliveries_update)
+
+    employment_doc = serv_hist_collection.find({"index": "EMPLOYMENT"})
+    employment_update = {"$push": {'data': {'$each': [employment_dict], "$position": 0 }}}
+    for doc in employment_doc:
+        dates = [x['date'] for x in doc['data']]
+        if date not in dates:
+            serv_hist_collection.find_one_and_update({"index": "EMPLOYMENT"}, employment_update)
+
+    exports_doc = serv_hist_collection.find({"index": "EXPORTS"})
+    exports_update = {"$push": {'data': {'$each': [exports_dict], "$position": 0 }}}
+    for doc in exports_doc:
+        dates = [x['date'] for x in doc['data']]
+        if date not in dates:
+            serv_hist_collection.find_one_and_update({"index": "EXPORTS"}, exports_update)
+
+    imports_doc = serv_hist_collection.find({"index": "IMPORTS"})
+    imports_update = {"$push": {'data': {'$each': [imports_dict], "$position": 0 }}}
+    for doc in imports_doc:
+        dates = [x['date'] for x in doc['data']]
+        if date not in dates:
+            serv_hist_collection.find_one_and_update({"index": "IMPORTS"}, imports_update)
+            
+    inventories_doc = serv_hist_collection.find({"index": "INVENTORIES"})
+    inventories_update = {"$push": {'data': {'$each': [inventories_dict], "$position": 0 }}}
+    for doc in inventories_doc:
+        dates = [x['date'] for x in doc['data']]
+        if date not in dates:
+            serv_hist_collection.find_one_and_update({"index": "INVENTORIES"}, inventories_update)
+            
+    inventories_sentiment_doc = serv_hist_collection.find({"index": "INVENTORY_SENTIMENT"})
+    inventories_sentiment_update = {"$push": {'data': {'$each': [inventories_sentiment_dict], "$position": 0 }}}
+    for doc in inventories_sentiment_doc:
+        dates = [x['date'] for x in doc['data']]
+        if date not in dates:
+            serv_hist_collection.find_one_and_update({"index": "INVENTORY_SENTIMENT"}, inventories_sentiment_update)
+            
+    new_orders_doc = serv_hist_collection.find({"index": "NEW_ORDERS"})
+    new_orders_update = {"$push": {'data': {'$each': [new_orders_dict], "$position": 0 }}}
+    for doc in new_orders_doc:
+        dates = [x['date'] for x in doc['data']]
+        if date not in dates:
+            serv_hist_collection.find_one_and_update({"index": "NEW_ORDERS"}, new_orders_update)
+            
+    order_backlog_doc = serv_hist_collection.find({"index": "ORDER_BACKLOG"})
+    order_backlog_update = {"$push": {'data': {'$each': [order_backlog_dict], "$position": 0 }}}
+    for doc in order_backlog_doc:
+        dates = [x['date'] for x in doc['data']]
+        if date not in dates:
+            serv_hist_collection.find_one_and_update({"index": "ORDER_BACKLOG"}, order_backlog_update)
+            
+    prices_doc = serv_hist_collection.find({"index": "PRICES"})
+    prices_update = {"$push": {'data': {'$each': [prices_dict], "$position": 0 }}}
+    for doc in prices_doc:
+        dates = [x['date'] for x in doc['data']]
+        if date not in dates:
+            serv_hist_collection.find_one_and_update({"index": "PRICES"}, prices_update)
 
     mongo_item = {
         '_id': 'ism-services-' + headline_words[0].lower() + "-" + headline_words[1],
         'series': 'ISM Services Report On Business',
         'date': date,
         'period': period,
-        'values': values,
         'sectors': data
     }
 
