@@ -4,6 +4,7 @@ import psycopg2.extras
 import yahooquery
 from yahooquery import Ticker
 import json
+from datetime import datetime
 
 import pymongo
 mongo_uri = "mongodb://localhost:27017"
@@ -36,7 +37,11 @@ records = cur.fetchall()
 def insert_earnings_trend(ticker):
     try:
         item = Ticker(ticker)
-        collection.find_one_and_update({"symbol": ticker}, { "$set": { "yahooEstimates": item.earnings_trend[ticker]['trend'] }}, upsert=True)
+        mongo_obj = {
+            "updatedAt": datetime.today().strftime("%d/%m/%Y"),
+            "yahooEstimates": item.earnings_trend[ticker]['trend']
+        }
+        collection.find_one_and_update({"symbol": ticker}, { "$set": { "yahooEstimates": mongo_obj }}, upsert=True)
         # print(len(item.earnings_trend[ticker]['trend']))
     except:
         collection.find_one_and_update({"symbol": ticker}, { "$unset": { "yahooEstimates": "" }}, upsert=True)

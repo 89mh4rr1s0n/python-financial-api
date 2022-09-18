@@ -588,11 +588,11 @@ def get_earnings_analysis(ticker):
     except:
         print("error", ticker)
 
-# for rec in records[:10]:
-#     get_earnings_analysis(rec[0])
-#     print(rec[0])
+for rec in records:
+    get_earnings_analysis(rec[0])
+    print(rec[0])
 
-for symbol in tickers:
-    get_earnings_analysis(symbol)
-    print(symbol)
+# for symbol in tickers:
+#     get_earnings_analysis(symbol)
+#     print(symbol)
     

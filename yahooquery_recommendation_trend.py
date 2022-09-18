@@ -5,6 +5,7 @@ import psycopg2.extras
 import yahooquery
 from yahooquery import Ticker
 import json
+from datetime import datetime
 
 import pymongo
 mongo_uri = "mongodb://localhost:27017"
@@ -40,7 +41,13 @@ def insert_recommendation_trend(ticker):
         item = Ticker(ticker)
         # pprint(item.recommendation_trend)
         recommendation_trend = json.loads(item.recommendation_trend.to_json(orient='records', date_format='iso'))
-        collection.find_one_and_update({"symbol": ticker}, { "$set": { "recommendationTrend": recommendation_trend }}, upsert=True)
+        # recommendation_trend.append(datetime.today().strftime("%d/%m/%Y"))
+        item = {
+            "updatedAt": datetime.today().strftime("%d/%m/%Y"),
+            "recommendationTrend": recommendation_trend
+        }
+        # print(recommendation_trend)
+        collection.find_one_and_update({"symbol": ticker}, { "$set": { "recommendationTrend": item }}, upsert=True)
         # print(len(item.earnings_trend[ticker]['trend']))
     except:
         # collection.find_one_and_update({"symbol": ticker}, { "$unset": { "yahooEstimates": "" }}, upsert=True)

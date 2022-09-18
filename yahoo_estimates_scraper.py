@@ -9,6 +9,16 @@ import pprint
 import yfinance as yf
 import json
 
+
+#
+#
+# this file has been replaced by yahooquery_estimates.py
+# as yfinance is extremely slow
+#
+
+
+
+
 import pymongo
 mongo_uri = "mongodb://localhost:27017"
 client = pymongo.MongoClient(mongo_uri) 
