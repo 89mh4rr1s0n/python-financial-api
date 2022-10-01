@@ -21,7 +21,7 @@ import pymongo
 mongo_uri = "mongodb://localhost:27017"
 client = pymongo.MongoClient(mongo_uri) 
 db = client["financialModellingPrepDB"]
-collection = db["zacksScreener"]
+collection = db["itpmData2"]
 
 PATH = "C:/Program Files (x86)/chromeWebDriver/chromedriver.exe"
 # driver = webdriver.Chrome(PATH)

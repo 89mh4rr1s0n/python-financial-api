@@ -92,3 +92,6 @@ def get_earnings_analysis(ticker):
     print(sentiment_df)
 
 get_earnings_analysis('AAPL')
+
+
+# can be deleted as not being used -- earnings_transcript is being used instead

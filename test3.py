@@ -1,4 +1,3 @@
-
 import pymongo
 from pprint import pprint
 mongo_uri = "mongodb://localhost:27017"

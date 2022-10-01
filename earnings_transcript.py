@@ -5,6 +5,7 @@ import textstat
 import requests
 import psycopg2
 import psycopg2.extras
+from tqdm import tqdm
 import pymongo
 mongo_uri = "mongodb://localhost:27017"
 client = pymongo.MongoClient(mongo_uri) 
@@ -480,7 +481,6 @@ def tone_count_with_negation_check(dict, article):
     # "Simple Measure of Gobbledygook" = the higher the score the harder the text is to read
     smog = textstat.smog_index(article)
 
-
     pos_count = 0
     neg_count = 0
  
@@ -533,20 +533,8 @@ def tone_count_with_negation_check(dict, article):
         "smog index": smog,
         "lexicon": lexicon
     }
-
-    # print('The results with negation check:', end='\n')
-    # print("Total Words:", word_count)
-    # print('The # of positive words:', pos_count)
-    # print('The # of negative words:', neg_count)
-    # print('The list of found positive words:', pos_words)
-    # print('The list of found negative words:', neg_words)
-    # print('\n', end='')
-    print(item)
- 
-    # results = [word_count, pos_count, neg_count, pos_words, neg_words]
  
     return item
- 
 
 # Connect to an existing database
 conn = psycopg2.connect("dbname=financialmodellingprep user=postgres password=Fastman12")
@@ -578,19 +566,28 @@ def get_earnings_analysis(ticker):
     try:
         earnings_dates = requests.get("https://financialmodelingprep.com/api/v4/earning_call_transcript?symbol="+ticker+"&apikey=e812649ac124bbb4d773e2ff24a28f0d")
         ed_json = json.loads(earnings_dates.text)
-        # print(ed_json[0])
-        mrq_transcript = requests.get("https://financialmodelingprep.com/api/v3/earning_call_transcript/"+ticker+"?quarter="+str(ed_json[0][0])+"&year="+str(ed_json[0][1])+"&apikey=e812649ac124bbb4d773e2ff24a28f0d")
-        mrq_transcript_json = json.loads(mrq_transcript.text)
-        article = mrq_transcript_json[0]["content"]
-        item = tone_count_with_negation_check(lmdict, article)
+        doc = collection.find_one({"symbol": ticker})
+        if "transcript" not in doc or doc["transcript"]["period"] != "Q"+str(ed_json[0][0])+" "+str(ed_json[0][1]):
+            try:
+                mrq_transcript = requests.get("https://financialmodelingprep.com/api/v3/earning_call_transcript/"+ticker+"?quarter="+str(ed_json[0][0])+"&year="+str(ed_json[0][1])+"&apikey=e812649ac124bbb4d773e2ff24a28f0d")
+                mrq_transcript_json = json.loads(mrq_transcript.text)
+                article = mrq_transcript_json[0]["content"]
+                item = tone_count_with_negation_check(lmdict, article)
+                item["period"] = "Q"+str(ed_json[0][0])+" "+str(ed_json[0][1])
+                collection.find_one_and_update({"symbol": ticker}, { "$set": { "transcript": item }}, upsert=True)
+            except Exception:
+                pass
+        else:
+            # print("latest transcript is already in the database")
+            pass
+    except Exception:
+        pass
 
-        collection.find_one_and_update({"symbol": ticker}, { "$set": { "transcript": item }}, upsert=True)
-    except:
-        print("error", ticker)
-
-for rec in records:
+for rec in tqdm(records):
     get_earnings_analysis(rec[0])
-    print(rec[0])
+    # print(rec[0])
+
+# get_earnings_analysis('A')
 
 # for symbol in tickers:
 #     get_earnings_analysis(symbol)

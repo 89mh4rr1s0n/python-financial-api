@@ -249,3 +249,6 @@ with open(latest_zacks, 'r') as file:
     # print(mongo_item)
 
 # print((rows[0:2]))
+
+
+#  THIS FILE IS NO LONGER USED AND CAN BE DELETED
