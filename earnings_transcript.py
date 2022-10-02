@@ -567,7 +567,7 @@ def get_earnings_analysis(ticker):
         earnings_dates = requests.get("https://financialmodelingprep.com/api/v4/earning_call_transcript?symbol="+ticker+"&apikey=e812649ac124bbb4d773e2ff24a28f0d")
         ed_json = json.loads(earnings_dates.text)
         doc = collection.find_one({"symbol": ticker})
-        if "transcript" not in doc or doc["transcript"]["period"] != "Q"+str(ed_json[0][0])+" "+str(ed_json[0][1]):
+        if "transcript" not in doc or "period" not in doc["transcript"] or doc["transcript"]["period"] != "Q"+str(ed_json[0][0])+" "+str(ed_json[0][1]):
             try:
                 mrq_transcript = requests.get("https://financialmodelingprep.com/api/v3/earning_call_transcript/"+ticker+"?quarter="+str(ed_json[0][0])+"&year="+str(ed_json[0][1])+"&apikey=e812649ac124bbb4d773e2ff24a28f0d")
                 mrq_transcript_json = json.loads(mrq_transcript.text)
@@ -575,7 +575,7 @@ def get_earnings_analysis(ticker):
                 item = tone_count_with_negation_check(lmdict, article)
                 item["period"] = "Q"+str(ed_json[0][0])+" "+str(ed_json[0][1])
                 collection.find_one_and_update({"symbol": ticker}, { "$set": { "transcript": item }}, upsert=True)
-            except Exception:
+            except:
                 pass
         else:
             # print("latest transcript is already in the database")
@@ -585,9 +585,8 @@ def get_earnings_analysis(ticker):
 
 for rec in tqdm(records):
     get_earnings_analysis(rec[0])
-    # print(rec[0])
 
-# get_earnings_analysis('A')
+# get_earnings_analysis('CLOV')
 
 # for symbol in tickers:
 #     get_earnings_analysis(symbol)
