@@ -1,0 +1,3 @@
+file to update ism manufacturing:
+ism_manufacturing_sectors_script.pymongo
+

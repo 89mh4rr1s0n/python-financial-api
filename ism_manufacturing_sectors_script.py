@@ -16,6 +16,7 @@ from selenium import webdriver
 from selenium.webdriver.chrome.service import Service
 from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
+import chromedriver_autoinstaller as chromedriver
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
 
@@ -41,7 +42,10 @@ man_ind_list = [
 ]
 
 PATH = "C:\Program Files (x86)\chromeWebDriver\chromedriver.exe"
-driver = webdriver.Chrome(PATH)
+# driver = webdriver.Chrome(PATH)
+chromedriver.install()
+
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 
 driver.get('https://www.prnewswire.com/news/institute-for-supply-management/')
 
@@ -147,7 +151,8 @@ def get_ind_rankings(text, series_name):
 
 def get_ism_data(link):
     data.clear()
-    driver = webdriver.Chrome(PATH)
+    # driver = webdriver.Chrome(PATH)
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     driver.get(link)
     man = driver.find_element(By.XPATH, "//*[contains(text(), 'manufacturing industries reported growth in') or contains(text(), ' reported growth in')]")
     new_orders = driver.find_element(By.XPATH, "//*[contains(text(), 'reported growth in new orders in')]")

@@ -18,6 +18,7 @@ from webdriver_manager.chrome import ChromeDriverManager
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+import chromedriver_autoinstaller as chromedriver
 
 serv_ind_list = [
     'Accommodation & Food Services',
@@ -41,7 +42,10 @@ serv_ind_list = [
 ]
 
 PATH = "C:\Program Files (x86)\chromeWebDriver\chromedriver.exe"
-driver = webdriver.Chrome(PATH)
+# driver = webdriver.Chrome(PATH)
+chromedriver.install()
+
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 
 driver.get('https://www.prnewswire.com/news/institute-for-supply-management/')
 
@@ -146,7 +150,8 @@ def get_ind_rankings(text, series_name):
 
 def get_ism_data(link):
     data.clear()
-    driver = webdriver.Chrome(PATH)
+    # driver = webdriver.Chrome(PATH)
+    driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
     driver.get(link)
     nmi = driver.find_element(By.XPATH, "//*[contains(text(), 'services industries reporting growth in') or contains(text(), 'non-manufacturing industries reporting growth')]")
     business_activity = driver.find_element(By.XPATH, "//*[contains(text(), 'in business activity')]")

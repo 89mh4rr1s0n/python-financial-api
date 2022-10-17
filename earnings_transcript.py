@@ -554,7 +554,7 @@ cur.execute("""select
 	isetf
 from profiles
 where isetf = 'false' and mktcap::float > 1000000000
-order by mktcap::float asc""")
+order by mktcap::float desc""")
 
 records = cur.fetchall()
 

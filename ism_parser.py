@@ -41,7 +41,9 @@ man_ind_list = [
 ]
 
 PATH = "C:\Program Files (x86)\chromeWebDriver\chromedriver.exe"
-driver = webdriver.Chrome(PATH)
+# driver = webdriver.Chrome(PATH)
+
+driver = webdriver.Chrome(service=Service(ChromeDriverManager().install()))
 
 driver.get('https://www.prnewswire.com/news/institute-for-supply-management/')
 
