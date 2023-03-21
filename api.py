@@ -9,6 +9,9 @@ import yfinance as yf
 import investpy
 import datetime
 import requests
+from flask_apscheduler import APScheduler
+# from scrapers import export_test.my_task
+from scrapers.export_test import my_task
 
 import pymongo
 mongo_uri = "mongodb://localhost:27017"
@@ -32,6 +35,7 @@ ib = IB()
 #             clientId=random_id,
 #             timeout=0)
 
+scheduler = APScheduler()
 app = Flask(__name__)
 api = Api(app)
 
@@ -235,6 +239,9 @@ def getOption(symbol, expiry, strike, right):
     )
     details = ib.reqTickers(contract)
 
+def job1():
+    print('dsghtwe')
+
 # api.add_resource(HelloWorld, "/helloworld")
 api.add_resource(Historical, "/historical/<string:symbol>")
 api.add_resource(BondList, "/available-bonds")
@@ -252,5 +259,11 @@ api.add_resource(IsmServHist, "/ism-serv-hist")
 api.add_resource(Itpm, "/itpm")
 api.add_resource(ItpmRatiosTTM, "/itpm-ratios")
 
+@scheduler.task('interval', id='my_job', seconds = 4)
+def my_job():
+    my_task()
+
 if __name__ == "__main__":
-    app.run(debug=True)
+    # scheduler.add_job(id='mytask', func=export_test.my_task(), trigger = 'interval', seconds = 4)
+    scheduler.start()
+    app.run(debug=True, use_reloader=False)
